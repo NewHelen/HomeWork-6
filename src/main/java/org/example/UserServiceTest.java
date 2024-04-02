@@ -5,6 +5,7 @@ import org.example.user.User;
 import org.example.user.UserService;
 import org.junit.*;
 import java.net.http.HttpResponse;
+import java.util.List;
 
 public class UserServiceTest {
 
@@ -13,20 +14,22 @@ public class UserServiceTest {
 
     @Test
     public void testGetUsersSuccess (){
-        HttpResponse<String> responseGetAllUsers = userService.getUsers();
-        Assert.assertEquals(200,responseGetAllUsers.statusCode());
+        int expectedUsersCount =10;
+        List<User> users = userService.getUsers();
+        Assert.assertEquals(expectedUsersCount, users.size());
     }
 
     @Test
     public void testGetUserByIdSuccess(){
-        HttpResponse<String> responseGetUser = userService.getUser(1);
-        Assert.assertEquals(200,responseGetUser.statusCode());
+        User user = userService.getUser(1);
+        Assert.assertEquals(1,user.getId());
     }
 
     @Test
     public void testGetUserByUserNameSuccess(){
-        HttpResponse<String> responseGetUser = userService.getUser("Antonette");
-        Assert.assertEquals(200,responseGetUser.statusCode());
+        String username = "Antonette";
+        User user = userService.getUser(username);
+        Assert.assertEquals(username, user.getUsername());
     }
 
     @SneakyThrows
@@ -37,10 +40,8 @@ public class UserServiceTest {
                 .name("Olena")
                 .username("User-1")
                 .email("email@gmail.com")
-                .address("Main Street")
-                .phone("1-770-736-8031 x56442")
+                .phone("333-333-333")
                 .website("www.test.com")
-                .company("Crona")
                 .build();
 
         User createdUser = userService.createUser(userDto);
@@ -51,20 +52,20 @@ public class UserServiceTest {
 
     @Test
     public void testUpdateUserSuccess(){
-        User updatedUserDto = User.builder()
+        User newUserInfo = User.builder()
+                .id(1)
                 .email("NewEmail@gmail.com")
-                .address("New Street")
-                .company("Crona")
+                .phone("555-555-555")
                 .build();
-        HttpResponse<String> responseUpdateUser = userService.updateUser(10, updatedUserDto);
-        Assert.assertEquals(200,responseUpdateUser.statusCode());
-        // ? Expected updated JSON
+
+        User updatedUser = userService.updateUser(newUserInfo.getId(), newUserInfo);
+        Assert.assertEquals(newUserInfo,updatedUser);
     }
 
     @Test
     public void testDeleteUserByIdSuccess(){
-        HttpResponse<String> responseDeleteUser = userService.deleteUser(9);
+        int responseCode = userService.deleteUser(9);
         //будемо вважати коректним результат - статус відповіді 200
-        Assert.assertEquals(200,responseDeleteUser.statusCode());
+        Assert.assertEquals(200,responseCode);
     }
 }
