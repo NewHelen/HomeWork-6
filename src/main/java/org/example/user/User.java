@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode
 @Builder
-public class UserDto{
-        Long id;
+public class User {
+        int id;
         String name;
         String username;
         String email;

@@ -1,11 +1,10 @@
 package org.example;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
-import org.example.user.UserDto;
+import org.example.user.User;
 import org.example.user.UserService;
 import org.junit.*;
 import java.net.http.HttpResponse;
-import java.util.Optional;
 
 public class UserServiceTest {
 
@@ -34,7 +33,7 @@ public class UserServiceTest {
     @Test
     public void testCreateUserSuccess(){
         // Створення нового Юзера
-        UserDto userDto = UserDto.builder()
+        User userDto = User.builder()
                 .name("Olena")
                 .username("User-1")
                 .email("email@gmail.com")
@@ -43,15 +42,16 @@ public class UserServiceTest {
                 .website("www.test.com")
                 .company("Crona")
                 .build();
-        UserDto createdUser = userService.createUser(userDto);
-//        Assert.assertEquals(11, createdUser.getId());
-//        userDto.setId(11);
-//        Assert.assertEquals(userDto, createdUser);
+
+        User createdUser = userService.createUser(userDto);
+        Assert.assertEquals(11, createdUser.getId());
+        userDto.setId(11);
+        Assert.assertEquals(userDto, createdUser);
     }
 
     @Test
     public void testUpdateUserSuccess(){
-        UserDto updatedUserDto = UserDto.builder()
+        User updatedUserDto = User.builder()
                 .email("NewEmail@gmail.com")
                 .address("New Street")
                 .company("Crona")
