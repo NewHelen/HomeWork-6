@@ -1,4 +1,4 @@
-package org.example.user;
+package org.example.core;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
