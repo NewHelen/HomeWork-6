@@ -1,6 +1,7 @@
 package org.example;
 import lombok.SneakyThrows;
 import org.example.core.Comment;
+import org.example.core.Task;
 import org.example.core.User;
 import org.example.core.Service;
 import org.junit.*;
@@ -20,7 +21,8 @@ public class UserServiceTest {
 
     @Test
     public void testGetUserByIdSuccess(){
-        User user = SERVICE.getUser(1);
+        int userId =1;
+        User user = SERVICE.getUser(userId);
         Assert.assertEquals(1,user.getId());
     }
 
@@ -71,8 +73,24 @@ public class UserServiceTest {
     //завдання 2
     @Test
     public void testGetCommentsForPostSuccess(){
-        int expectedCommentsCount =5;
-        List<Comment> commentList = SERVICE.getCommentsForUserPost(1);
-        Assert.assertEquals(expectedCommentsCount, commentList.size());
+        int userId =1;
+        String expectedFolderPath = "files";
+
+        String fileName = SERVICE.getCommentsForUserPost(userId);
+        String filePath = expectedFolderPath + "/" + fileName;
+
+        java.io.File file = new java.io.File(filePath);
+        Assert.assertTrue("The file was not created in the expected folder", file.exists());
+        Assert.assertEquals("The file was not created in the expected folder", expectedFolderPath, file.getParent());
+    }
+
+    //завдання 3
+    @Test
+    public void testGetOpenTasksSuccess(){
+        boolean isCompleted = false;
+        int expectedTasksCount = 9;
+        List<Task> filteredTasks = SERVICE.getUserTasks(1,isCompleted);
+        Assert.assertEquals("Filtered tasks size does not equal to expected size",expectedTasksCount, filteredTasks.size());
+
     }
 }
