@@ -73,7 +73,7 @@ public class UserServiceTest {
         int userId =1;
         int maxPost = 10;
         String expectedFileName = "user-" + userId + "-post-" + maxPost + "-comments.json";
-        String expectedDirectory = "files/";
+        String expectedDirectory = "target/";
 
         USER_SERVICE.getCommentsForUserPost(userId,expectedDirectory);
         Assert.assertTrue("The file was not created in the expected folder",
