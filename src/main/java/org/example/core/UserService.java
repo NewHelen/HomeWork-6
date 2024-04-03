@@ -1,22 +1,26 @@
 package org.example.core;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.SneakyThrows;
-import org.example.AbstractService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.example.core.dto.Post;
+import org.example.core.dto.Task;
+import org.example.core.dto.User;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Service extends AbstractService {
+public class UserService extends AbstractService {
 
+    private static final Logger logger = LogManager.getLogger(AbstractService.class);
     public static final String BASE_URL = "https://jsonplaceholder.typicode.com";
     private static final Gson GSON = new Gson();
 
@@ -38,11 +42,13 @@ public class Service extends AbstractService {
         return GSON.fromJson(response.body(), User.class);
     }
 
-    public User getUser(String username) {
-        List<User> users = getUsers();
-        return users.stream()
-                .filter(u -> u.getUsername().equals(username))
-                .findFirst().get();
+    public List<User> getUsers(String username) {
+        HttpResponse<String> response = performHttpCall(
+                HttpRequest.newBuilder(URI.create(BASE_URL + "/users?username=" + username))
+                        .GET()
+                        .build());
+        return GSON.fromJson(response.body(), new TypeToken<List<User>>() {
+        }.getType());
     }
 
     @SneakyThrows
@@ -73,17 +79,18 @@ public class Service extends AbstractService {
     }
 
     //завдання 2
-    public String getCommentsForUserPost(int userId) {
+    public void getCommentsForUserPost(int userId, String directory) {
         List<Post> posts = getUserPosts(userId);
         int maxId = findMaxPostId(posts);
         HttpResponse<String> response = performHttpCall(
                 HttpRequest.newBuilder(URI.create(BASE_URL + "/posts/" + maxId + "/comments"))
                         .GET()
                         .build());
-        List<Comment> commentList = GSON.fromJson(response.body(), new TypeToken<List<Post>>() {
-        }.getType());
-        writeToJsonFile(commentList, "files/user-" + userId + "-post-" + maxId + "-comments.json");
-        return "user-" + userId + "-post-" + maxId + "-comments.json";
+        try {
+            Files.write(Paths.get(directory + "user-" + userId + "-post-" + maxId + "-comments.json"), response.body().getBytes());
+        } catch (IOException e) {
+            logger.error("An error occurred: " + e);
+        }
     }
 
     private List<Post> getUserPosts(int userId) {
@@ -102,32 +109,16 @@ public class Service extends AbstractService {
                 .orElse(0); // Повернути 0, якщо список постів порожній
     }
 
-    private void writeToJsonFile(List<Comment> commentList, String jsonFileName) {
-        try (FileWriter fileWriter = new FileWriter(jsonFileName)) {
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-            objectMapper.writeValue(fileWriter, commentList);
-
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-        }
-    }
-
     //завдання 3
-    public List<Task> getUserTasks(int userId, boolean isCompleted) {
+    public List<Task> getOpenUserTasks(int userId) {
         HttpResponse<String> response = performHttpCall(
                 HttpRequest.newBuilder(URI.create(BASE_URL + "/users/" + userId + "/todos"))
                         .GET()
                         .build());
         List<Task> taskList = GSON.fromJson(response.body(), new TypeToken<List<Task>>() {
         }.getType());
-        return filterTasks(taskList, isCompleted);
-    }
-
-    private List<Task> filterTasks(List<Task> tasks, boolean isCompleted) {
-        return tasks.stream()
-                .filter(task -> task.isCompleted() == isCompleted)
+        return taskList.stream()
+                .filter(task -> !task.isCompleted())
                 .collect(Collectors.toList());
     }
 }

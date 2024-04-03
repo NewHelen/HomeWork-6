@@ -1,42 +1,39 @@
-package org.example;
+package org.example.core;
 import lombok.SneakyThrows;
-import org.example.core.Comment;
-import org.example.core.Task;
-import org.example.core.User;
-import org.example.core.Service;
+import org.example.core.dto.Task;
+import org.example.core.dto.User;
 import org.junit.*;
 import java.util.List;
 
 public class UserServiceTest {
 
-    private static final Service SERVICE = new Service();
+    private static final UserService USER_SERVICE = new UserService();
 
     //завдання 1
     @Test
     public void testGetUsersSuccess (){
         int expectedUsersCount =10;
-        List<User> users = SERVICE.getUsers();
+        List<User> users = USER_SERVICE.getUsers();
         Assert.assertEquals(expectedUsersCount, users.size());
     }
 
     @Test
     public void testGetUserByIdSuccess(){
         int userId =1;
-        User user = SERVICE.getUser(userId);
+        User user = USER_SERVICE.getUser(userId);
         Assert.assertEquals(1,user.getId());
     }
 
     @Test
     public void testGetUserByUserNameSuccess(){
         String username = "Antonette";
-        User user = SERVICE.getUser(username);
-        Assert.assertEquals(username, user.getUsername());
+        List<User> users = USER_SERVICE.getUsers(username);
+        users.forEach(user -> Assert.assertEquals(username,user.getUsername()));
     }
 
     @SneakyThrows
     @Test
     public void testCreateUserSuccess(){
-        // Створення нового Юзера
         User userDto = User.builder()
                 .name("Olena")
                 .username("User-1")
@@ -45,7 +42,7 @@ public class UserServiceTest {
                 .website("www.test.com")
                 .build();
 
-        User createdUser = SERVICE.createUser(userDto);
+        User createdUser = USER_SERVICE.createUser(userDto);
         Assert.assertEquals(11, createdUser.getId());
         userDto.setId(11);
         Assert.assertEquals(userDto, createdUser);
@@ -59,13 +56,13 @@ public class UserServiceTest {
                 .phone("555-555-555")
                 .build();
 
-        User updatedUser = SERVICE.updateUser(newUserInfo.getId(), newUserInfo);
+        User updatedUser = USER_SERVICE.updateUser(newUserInfo.getId(), newUserInfo);
         Assert.assertEquals(newUserInfo,updatedUser);
     }
 
     @Test
     public void testDeleteUserByIdSuccess(){
-        int responseCode = SERVICE.deleteUser(9);
+        int responseCode = USER_SERVICE.deleteUser(9);
         //будемо вважати коректним результат - статус відповіді 200
         Assert.assertEquals(200,responseCode);
     }
@@ -74,23 +71,22 @@ public class UserServiceTest {
     @Test
     public void testGetCommentsForPostSuccess(){
         int userId =1;
-        String expectedFolderPath = "files";
+        int maxPost = 10;
+        String expectedFileName = "user-" + userId + "-post-" + maxPost + "-comments.json";
+        String expectedDirectory = "files/";
 
-        String fileName = SERVICE.getCommentsForUserPost(userId);
-        String filePath = expectedFolderPath + "/" + fileName;
-
-        java.io.File file = new java.io.File(filePath);
-        Assert.assertTrue("The file was not created in the expected folder", file.exists());
-        Assert.assertEquals("The file was not created in the expected folder", expectedFolderPath, file.getParent());
+        USER_SERVICE.getCommentsForUserPost(userId,expectedDirectory);
+        Assert.assertTrue("The file was not created in the expected folder",
+                new java.io.File(expectedDirectory + expectedFileName).exists());
     }
 
     //завдання 3
     @Test
     public void testGetOpenTasksSuccess(){
-        boolean isCompleted = false;
         int expectedTasksCount = 9;
-        List<Task> filteredTasks = SERVICE.getUserTasks(1,isCompleted);
-        Assert.assertEquals("Filtered tasks size does not equal to expected size",expectedTasksCount, filteredTasks.size());
+        List<Task> filteredTasks = USER_SERVICE.getOpenUserTasks(1);
+        Assert.assertEquals("Filtered tasks size does not equal to expected size",
+                expectedTasksCount, filteredTasks.size());
 
     }
 }

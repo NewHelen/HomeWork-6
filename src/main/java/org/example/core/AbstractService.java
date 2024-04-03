@@ -1,4 +1,4 @@
-package org.example;
+package org.example.core;
 
 import lombok.SneakyThrows;
 import org.apache.logging.log4j.LogManager;
